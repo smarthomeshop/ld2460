@@ -1,9 +1,11 @@
 # UltimateSensor Mini V2 LD2460 tracking package example.
-# Use this when LD2460 replaces LD2450 on the same UART pins.
+# Schematic mapping:
+#   ESP GPIO4 TX -> LD2460 RX
+#   ESP GPIO5 RX <- LD2460 TX
 
 substitutions:
-  ld2460_tx_pin: GPIO18
-  ld2460_rx_pin: GPIO19
+  ld2460_tx_pin: GPIO4
+  ld2460_rx_pin: GPIO5
 
 packages:
   tracking:

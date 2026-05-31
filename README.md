@@ -159,12 +159,12 @@ packages:
     refresh: 1d
 ```
 
-UltimateSensor Mini V2 when LD2460 replaces LD2450 on the same UART pins:
+UltimateSensor Mini V2 schematic mapping:
 
 ```yaml
 substitutions:
-  ld2460_tx_pin: GPIO18
-  ld2460_rx_pin: GPIO19
+  ld2460_tx_pin: GPIO4 # ESP TX -> LD2460 RX
+  ld2460_rx_pin: GPIO5 # ESP RX <- LD2460 TX
 
 packages:
   tracking:
