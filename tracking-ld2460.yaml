@@ -100,33 +100,25 @@ ld2460:
     x:
       id: tracking_target_4_x
       name: "Tracking Target 4 X"
-      disabled_by_default: true
     y:
       id: tracking_target_4_y
       name: "Tracking Target 4 Y"
-      disabled_by_default: true
     distance:
       id: tracking_target_4_distance
       name: "Tracking Target 4 Distance"
-      disabled_by_default: true
     angle:
       id: tracking_target_4_angle
       name: "Tracking Target 4 Angle"
-      disabled_by_default: true
   target_5:
     x:
       id: tracking_target_5_x
       name: "Tracking Target 5 X"
-      disabled_by_default: true
     y:
       id: tracking_target_5_y
       name: "Tracking Target 5 Y"
-      disabled_by_default: true
     distance:
       id: tracking_target_5_distance
       name: "Tracking Target 5 Distance"
-      disabled_by_default: true
     angle:
       id: tracking_target_5_angle
       name: "Tracking Target 5 Angle"
-      disabled_by_default: true

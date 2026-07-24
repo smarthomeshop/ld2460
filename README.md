@@ -14,6 +14,7 @@ settings itself.
 components/ld2460/   ESPHome external component implementation
 ld2460.yaml          Reusable generic ESPHome package
 tracking-ld2460.yaml Reusable SmartHomeShop tracking package with stable IDs
+packages/            Shared SmartHomeShop Room Designer zone engine
 examples/            Product integration examples
 tests/               Local validation fixture
 example.yaml         Minimal copy-paste usage example
@@ -36,13 +37,15 @@ substitutions:
 packages:
   ld2460:
     url: https://github.com/smarthomeshop/ld2460
-    ref: v0.1.1
+    ref: main
     files:
-      - ld2460.yaml
+      - tracking-ld2460.yaml
+      - packages/ld2460-polygon-zones.yaml
     refresh: 1d
 ```
 
-Pinning the package to a Git tag is recommended. See [CHANGELOG.md](CHANGELOG.md)
+Pinning the package to a Git tag is recommended for released firmware. Use
+`main` while developing both packages together. See [CHANGELOG.md](CHANGELOG.md)
 for released versions. `refresh` controls how often ESPHome checks whether the
 referenced package source should be refreshed locally.
 
@@ -143,6 +146,12 @@ rewriting occupancy logic:
 - `tracking_target_1_distance`, `tracking_target_1_angle`
 - same pattern for targets 2-5
 
+Add `packages/ld2460-polygon-zones.yaml` alongside it for full Room Designer
+support. The shared engine provides four polygon zones, two exclusion zones,
+two entry lines and persistent people counting. It consumes all five LD2460
+targets and converts the radar coordinates from metres to the millimetres used
+by Room Designer.
+
 UltimateSensor V2 schematic mapping:
 
 ```yaml
@@ -153,9 +162,10 @@ substitutions:
 packages:
   tracking:
     url: https://github.com/smarthomeshop/ld2460
-    ref: v0.1.1
+    ref: main
     files:
       - tracking-ld2460.yaml
+      - packages/ld2460-polygon-zones.yaml
     refresh: 1d
 ```
 
@@ -169,9 +179,10 @@ substitutions:
 packages:
   tracking:
     url: https://github.com/smarthomeshop/ld2460
-    ref: v0.1.1
+    ref: main
     files:
       - tracking-ld2460.yaml
+      - packages/ld2460-polygon-zones.yaml
     refresh: 1d
 ```
 

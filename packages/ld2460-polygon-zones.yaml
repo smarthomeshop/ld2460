@@ -1,0 +1,399 @@
+# Shared SmartHomeShop Room Designer zone engine for HLK-LD2460 radar.
+#
+# LD2460 reports five targets in metres. Room Designer stores geometry in mm.
+
+substitutions:
+  room_designer_target_count: "5"
+  room_designer_coordinate_scale: "1000.0f"
+  room_designer_target_1_x_id: tracking_target_1_x
+  room_designer_target_1_y_id: tracking_target_1_y
+  room_designer_target_2_x_id: tracking_target_2_x
+  room_designer_target_2_y_id: tracking_target_2_y
+  room_designer_target_3_x_id: tracking_target_3_x
+  room_designer_target_3_y_id: tracking_target_3_y
+  room_designer_target_4_x_id: tracking_target_4_x
+  room_designer_target_4_y_id: tracking_target_4_y
+  room_designer_target_5_x_id: tracking_target_5_x
+  room_designer_target_5_y_id: tracking_target_5_y
+
+
+api:
+  actions:
+    - action: set_polygon_zone
+      variables:
+        zone_id: int
+        polygon: string
+      then:
+        - lambda: |-
+            if (zone_id == 1) { id(poly_zone_1).make_call().set_value(polygon).perform(); }
+            else if (zone_id == 2) { id(poly_zone_2).make_call().set_value(polygon).perform(); }
+            else if (zone_id == 3) { id(poly_zone_3).make_call().set_value(polygon).perform(); }
+            else if (zone_id == 4) { id(poly_zone_4).make_call().set_value(polygon).perform(); }
+    - action: set_polygon_exclusion
+      variables:
+        zone_id: int
+        polygon: string
+      then:
+        - lambda: |-
+            if (zone_id == 1) { id(poly_exclusion_1).make_call().set_value(polygon).perform(); }
+            else if (zone_id == 2) { id(poly_exclusion_2).make_call().set_value(polygon).perform(); }
+    - action: set_entry_line
+      variables:
+        line_id: int
+        line_data: string
+      then:
+        - lambda: |-
+            ESP_LOGI("room_designer_zones", "Setting entry line %d: %s", line_id, line_data.c_str());
+            if (line_id == 1) { id(entry_line_1).make_call().set_value(line_data).perform(); }
+            else if (line_id == 2) { id(entry_line_2).make_call().set_value(line_data).perform(); }
+    - action: reset_people_count
+      then:
+        - lambda: |-
+            id(room_people_count) = 0;
+            id(people_count).publish_state(0);
+            ESP_LOGI("room_designer_zones", "People count reset to 0");
+
+globals:
+  - id: room_people_count
+    type: int
+    restore_value: true
+    initial_value: '0'
+
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - lambda: |-
+          id(people_count).publish_state(id(room_people_count));
+          id(last_crossing_direction).publish_state("none");
+
+text:
+  - platform: template
+    name: "Polygon Zone 1"
+    id: poly_zone_1
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Polygon Zone 2"
+    id: poly_zone_2
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Polygon Zone 3"
+    id: poly_zone_3
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Polygon Zone 4"
+    id: poly_zone_4
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Polygon Exclusion 1"
+    id: poly_exclusion_1
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Polygon Exclusion 2"
+    id: poly_exclusion_2
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Entry Line 1"
+    id: entry_line_1
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+  - platform: template
+    name: "Entry Line 2"
+    id: entry_line_2
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: ""
+    entity_category: config
+
+switch:
+  - platform: template
+    name: "Polygon Zones Enabled"
+    id: polygon_zones_enabled
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+
+binary_sensor:
+  - platform: template
+    name: "Polygon Zone 1 Presence"
+    id: poly_zone_1_presence
+    device_class: occupancy
+    filters:
+      - delayed_off: 1s
+  - platform: template
+    name: "Polygon Zone 2 Presence"
+    id: poly_zone_2_presence
+    device_class: occupancy
+    filters:
+      - delayed_off: 1s
+  - platform: template
+    name: "Polygon Zone 3 Presence"
+    id: poly_zone_3_presence
+    device_class: occupancy
+    filters:
+      - delayed_off: 1s
+  - platform: template
+    name: "Polygon Zone 4 Presence"
+    id: poly_zone_4_presence
+    device_class: occupancy
+    filters:
+      - delayed_off: 1s
+
+sensor:
+  - platform: template
+    name: "Polygon Zone 1 Target Count"
+    id: poly_zone_1_count
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: never
+  - platform: template
+    name: "Polygon Zone 2 Target Count"
+    id: poly_zone_2_count
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: never
+  - platform: template
+    name: "Polygon Zone 3 Target Count"
+    id: poly_zone_3_count
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: never
+  - platform: template
+    name: "Polygon Zone 4 Target Count"
+    id: poly_zone_4_count
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: never
+  - platform: template
+    name: "People Count"
+    id: people_count
+    icon: mdi:account-group
+    accuracy_decimals: 0
+    state_class: measurement
+    update_interval: never
+
+text_sensor:
+  - platform: template
+    name: "Last Crossing Direction"
+    id: last_crossing_direction
+    icon: mdi:swap-horizontal
+    update_interval: never
+
+button:
+  - platform: template
+    name: "Reset People Count"
+    icon: mdi:restart
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(room_people_count) = 0;
+          id(people_count).publish_state(0);
+          ESP_LOGI("room_designer_zones", "People count reset to 0");
+
+interval:
+  - interval: 250ms
+    then:
+      - lambda: |-
+          struct Poly { float vx[20]; float vy[20]; int n; };
+          struct Line { float x1, y1, x2, y2; bool in_is_left; bool valid; };
+          static Poly zones[4];
+          static Poly excls[2];
+          static Line lines[2];
+          static std::string zone_text[4], excl_text[2], line_text[2];
+          static bool cache_init = false;
+          static float prev_x[5], prev_y[5];
+          static bool prev_ok[5] = {false, false, false, false, false};
+
+          auto parse_poly = [](const std::string &s, Poly &p) {
+            p.n = 0;
+            size_t pos = 0;
+            while (pos < s.length() && p.n < 20) {
+              int x, y, consumed;
+              if (sscanf(s.c_str() + pos, "%d:%d%n", &x, &y, &consumed) == 2) {
+                p.vx[p.n] = (float) x;
+                p.vy[p.n] = (float) y;
+                p.n++;
+                pos += consumed;
+                if (pos < s.length() && s[pos] == ';') pos++;
+              } else {
+                break;
+              }
+            }
+          };
+          auto in_poly = [](float px, float py, const Poly &p) -> bool {
+            if (p.n < 3) return false;
+            bool inside = false;
+            for (int i = 0, j = p.n - 1; i < p.n; j = i++) {
+              const float xi = p.vx[i], yi = p.vy[i];
+              const float xj = p.vx[j], yj = p.vy[j];
+              if (((yi > py) != (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+                inside = !inside;
+              }
+            }
+            return inside;
+          };
+          auto parse_line = [](const std::string &s, Line &l) {
+            l.valid = false;
+            if (s.empty()) return;
+            int x1, y1, x2, y2;
+            char dir[10] = "left";
+            if (sscanf(s.c_str(), "%d:%d;%d:%d;%9s", &x1, &y1, &x2, &y2, dir) >= 4) {
+              l.x1 = (float) x1;
+              l.y1 = (float) y1;
+              l.x2 = (float) x2;
+              l.y2 = (float) y2;
+              l.in_is_left = strcmp(dir, "left") == 0;
+              l.valid = true;
+            }
+          };
+          auto side_of_line = [](float px, float py, const Line &l) -> float {
+            return (l.x2 - l.x1) * (py - l.y1) - (l.y2 - l.y1) * (px - l.x1);
+          };
+          auto check_crossing = [&side_of_line](float px0, float py0, float px1, float py1, const Line &l) -> int {
+            if (!l.valid) return 0;
+            const float side0 = side_of_line(px0, py0, l);
+            const float side1 = side_of_line(px1, py1, l);
+            if (side0 * side1 >= 0) return 0;
+            const float dx = l.x2 - l.x1, dy = l.y2 - l.y1;
+            const float len_sq = dx * dx + dy * dy;
+            if (len_sq < 1.0f) return 0;
+            const float dpx = px1 - px0, dpy = py1 - py0;
+            const float denom = dpx * (-dy) + dpy * dx;
+            if (fabsf(denom) < 1e-6f) return 0;
+            const float t = ((l.x1 - px0) * (-dy) + (l.y1 - py0) * dx) / denom;
+            if (t < 0.0f || t > 1.0f) return 0;
+            const float cx = px0 + t * dpx, cy = py0 + t * dpy;
+            const float u = ((cx - l.x1) * dx + (cy - l.y1) * dy) / len_sq;
+            if (u < 0.0f || u > 1.0f) return 0;
+            const bool now_on_left = side1 > 0;
+            return l.in_is_left ? (now_on_left ? 1 : -1) : (now_on_left ? -1 : 1);
+          };
+
+          const std::string zt[4] = {
+            id(poly_zone_1).state, id(poly_zone_2).state,
+            id(poly_zone_3).state, id(poly_zone_4).state
+          };
+          const std::string et[2] = {id(poly_exclusion_1).state, id(poly_exclusion_2).state};
+          const std::string lt[2] = {id(entry_line_1).state, id(entry_line_2).state};
+          for (int i = 0; i < 4; i++) {
+            if (!cache_init || zt[i] != zone_text[i]) {
+              parse_poly(zt[i], zones[i]);
+              zone_text[i] = zt[i];
+            }
+          }
+          for (int i = 0; i < 2; i++) {
+            if (!cache_init || et[i] != excl_text[i]) {
+              parse_poly(et[i], excls[i]);
+              excl_text[i] = et[i];
+            }
+            if (!cache_init || lt[i] != line_text[i]) {
+              parse_line(lt[i], lines[i]);
+              line_text[i] = lt[i];
+            }
+          }
+          cache_init = true;
+
+          const int target_count = ${room_designer_target_count};
+          if (!id(polygon_zones_enabled).state) {
+            for (int i = 0; i < target_count; i++) prev_ok[i] = false;
+            return;
+          }
+
+          const float scale = ${room_designer_coordinate_scale};
+          const float tx[5] = {
+            id(${room_designer_target_1_x_id}).state * scale,
+            id(${room_designer_target_2_x_id}).state * scale,
+            id(${room_designer_target_3_x_id}).state * scale,
+            id(${room_designer_target_4_x_id}).state * scale,
+            id(${room_designer_target_5_x_id}).state * scale
+          };
+          const float ty[5] = {
+            id(${room_designer_target_1_y_id}).state * scale,
+            id(${room_designer_target_2_y_id}).state * scale,
+            id(${room_designer_target_3_y_id}).state * scale,
+            id(${room_designer_target_4_y_id}).state * scale,
+            id(${room_designer_target_5_y_id}).state * scale
+          };
+          int zone_count[4] = {0, 0, 0, 0};
+
+          for (int target = 0; target < target_count; target++) {
+            const bool active = !std::isnan(tx[target]) && !std::isnan(ty[target])
+              && (tx[target] != 0.0f || ty[target] != 0.0f);
+            if (!active) {
+              prev_ok[target] = false;
+              continue;
+            }
+            const float px = tx[target], py = ty[target];
+            const bool excluded = in_poly(px, py, excls[0]) || in_poly(px, py, excls[1]);
+            if (!excluded) {
+              for (int zone = 0; zone < 4; zone++) {
+                if (in_poly(px, py, zones[zone])) zone_count[zone]++;
+              }
+            }
+
+            if (prev_ok[target]) {
+              for (int line = 0; line < 2; line++) {
+                const int crossing = check_crossing(
+                  prev_x[target], prev_y[target], px, py, lines[line]
+                );
+                if (crossing != 0) {
+                  int new_count = id(room_people_count) + crossing;
+                  if (new_count < 0) new_count = 0;
+                  id(room_people_count) = new_count;
+                  id(people_count).publish_state(new_count);
+                  id(last_crossing_direction).publish_state(crossing > 0 ? "in" : "out");
+                  ESP_LOGI(
+                    "room_designer_zones", "Target %d crossed entry line %d: %s (people=%d)",
+                    target + 1, line + 1, crossing > 0 ? "IN" : "OUT", new_count
+                  );
+                }
+              }
+            }
+            prev_x[target] = px;
+            prev_y[target] = py;
+            prev_ok[target] = true;
+          }
+
+          esphome::template_::TemplateSensor *count_sensors[4] = {
+            id(poly_zone_1_count), id(poly_zone_2_count),
+            id(poly_zone_3_count), id(poly_zone_4_count)
+          };
+          esphome::template_::TemplateBinarySensor *presence_sensors[4] = {
+            id(poly_zone_1_presence), id(poly_zone_2_presence),
+            id(poly_zone_3_presence), id(poly_zone_4_presence)
+          };
+          for (int zone = 0; zone < 4; zone++) {
+            if (!count_sensors[zone]->has_state()
+                || (int) count_sensors[zone]->state != zone_count[zone]) {
+              count_sensors[zone]->publish_state(zone_count[zone]);
+            }
+            presence_sensors[zone]->publish_state(zone_count[zone] > 0);
+          }
