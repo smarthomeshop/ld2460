@@ -13,6 +13,8 @@
 namespace esphome {
 namespace ld2460 {
 
+class LD2460InstallationModeSelect;
+
 class LD2460Component : public Component, public uart::UARTDevice {
  public:
   static const uint8_t MAX_TARGETS = 5;
@@ -32,6 +34,10 @@ class LD2460Component : public Component, public uart::UARTDevice {
   void set_installation_mode_text_sensor(text_sensor::TextSensor *installation_mode_text_sensor) {
     this->installation_mode_text_sensor_ = installation_mode_text_sensor;
   }
+  void set_installation_mode_select(LD2460InstallationModeSelect *installation_mode_select) {
+    this->installation_mode_select_ = installation_mode_select;
+  }
+  void set_installation_mode(uint8_t mode);
   void set_presence_binary_sensor(binary_sensor::BinarySensor *presence_binary_sensor) {
     this->presence_binary_sensor_ = presence_binary_sensor;
   }
@@ -73,6 +79,8 @@ class LD2460Component : public Component, public uart::UARTDevice {
   void send_startup_commands_();
   void send_enable_reporting_command_();
   void send_query_version_command_();
+  void send_query_installation_mode_command_();
+  void publish_installation_mode_(uint8_t mode);
   void select_next_baud_rate_();
   void process_rx_buffer_();
   void process_report_frame_(const std::vector<uint8_t> &frame);
@@ -94,6 +102,7 @@ class LD2460Component : public Component, public uart::UARTDevice {
   text_sensor::TextSensor *summary_text_sensor_{nullptr};
   text_sensor::TextSensor *firmware_text_sensor_{nullptr};
   text_sensor::TextSensor *installation_mode_text_sensor_{nullptr};
+  LD2460InstallationModeSelect *installation_mode_select_{nullptr};
   binary_sensor::BinarySensor *presence_binary_sensor_{nullptr};
   sensor::Sensor *target_count_sensor_{nullptr};
   sensor::Sensor *byte_count_sensor_{nullptr};

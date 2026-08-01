@@ -49,3 +49,10 @@ ld2460:
       name: "Tracking Target 1 Distance"
     angle:
       name: "Tracking Target 1 Angle"
+
+select:
+  - platform: ld2460
+    ld2460_id: tracking_radar
+    installation_mode:
+      id: tracking_installation_mode_select
+      name: "Tracking Radar Installation Mode"

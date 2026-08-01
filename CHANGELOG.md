@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.0 - 2026-07-31
+
+- Added an installation mode select using the official LD2460 `0x09` command
+  and a reusable ceiling-mode package that selects `top` after startup.
+- Added the universal SmartHomeShop ceiling and coordinate profiles.
+
 ## v0.1.1 - 2026-05-31
 
 - Defines package UART buses as lists so the package merges cleanly with firmware that already has another UART bus.

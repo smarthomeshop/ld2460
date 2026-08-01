@@ -1,0 +1,10 @@
+# Configure the shared LD2460 tracking package for top installation.
+
+esphome:
+  on_boot:
+    - priority: -50
+      then:
+        - delay: 3s
+        - select.set:
+            id: tracking_installation_mode_select
+            option: top

@@ -93,14 +93,14 @@ and are additionally limited by `ld2460_publish_interval`.
 
 | Substitution                        | Default                                       | Description                                         |
 | ----------------------------------- | --------------------------------------------- | --------------------------------------------------- |
-| `ld2460_package_version`            | `v0.1.1`                                      | Package release marker                              |
+| `ld2460_package_version`            | `v0.2.0`                                      | Package release marker                              |
 | `ld2460_tx_pin`                     | `GPIO16`                                      | ESP TX pin connected to LD2460 Rx2                  |
 | `ld2460_rx_pin`                     | `GPIO17`                                      | ESP RX pin connected to LD2460 Tx2                  |
 | `ld2460_bus_id`                     | `ld2460_bus`                                  | ESPHome UART bus id                                 |
 | `ld2460_component_id`               | `ld2460_radar`                                | ESPHome LD2460 component id                         |
 | `ld2460_publish_interval`           | `500ms`                                       | Minimum interval between changed HA state publishes |
 | `ld2460_report_log_interval`        | `1s`                                          | Interval for readable target report log lines       |
-| `ld2460_external_components_source` | `github://smarthomeshop/ld2460@v0.1.1`        | External component source                           |
+| `ld2460_external_components_source` | `github://smarthomeshop/ld2460@v0.2.0`        | External component source                           |
 
 ## Protocol Notes
 
@@ -151,6 +151,21 @@ support. The shared engine provides four polygon zones, two exclusion zones,
 two entry lines and persistent people counting. It consumes all five LD2460
 targets and converts the radar coordinates from metres to the millimetres used
 by Room Designer.
+
+For a ceiling-mounted product, add the universal mounting and LD2460 coordinate
+profiles. This declares circular floor coverage, top mounting, metre-to-mm
+conversion and five-target support without coupling the product to CeilSense:
+
+```yaml
+packages:
+  mounting: github://smarthomeshop/radar-mounting/packages/mounting/ceiling.yaml@main
+  radar_profile: github://smarthomeshop/radar-mounting/packages/radars/ld2460.yaml@main
+  radar_ceiling_mode: github://smarthomeshop/ld2460/packages/ld2460-ceiling-mode.yaml@main
+```
+
+The final package uses the official function `0x09` command to select the
+LD2460 hardware `top` installation mode after startup. The active mode is also
+visible and adjustable through the installation-mode select.
 
 UltimateSensor V2 schematic mapping:
 

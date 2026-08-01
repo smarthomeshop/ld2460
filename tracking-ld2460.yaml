@@ -1,7 +1,7 @@
 substitutions:
   # Package release. Keep this in sync with the Git tag and CHANGELOG.md.
-  ld2460_package_version: v0.1.1
-  ld2460_external_components_source: github://smarthomeshop/ld2460@v0.1.1
+  ld2460_package_version: v0.2.0
+  ld2460_external_components_source: github://smarthomeshop/ld2460@v0.2.0
   ld2460_bus_id: uart_tracking
   ld2460_component_id: tracking_radar
   ld2460_tx_pin: GPIO16
@@ -122,3 +122,10 @@ ld2460:
     angle:
       id: tracking_target_5_angle
       name: "Tracking Target 5 Angle"
+
+select:
+  - platform: ld2460
+    ld2460_id: ${ld2460_component_id}
+    installation_mode:
+      id: tracking_installation_mode_select
+      name: "Tracking Radar Installation Mode"

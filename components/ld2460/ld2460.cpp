@@ -1,5 +1,9 @@
 #include "ld2460.h"
 
+#ifdef USE_SELECT
+#include "select/ld2460_select.h"
+#endif
+
 #include "esphome/core/hal.h"
 #include "esphome/core/log.h"
 
@@ -84,6 +88,7 @@ void LD2460Component::loop() {
 
 void LD2460Component::send_startup_commands_() {
   this->send_enable_reporting_command_();
+  this->send_query_installation_mode_command_();
   this->send_query_version_command_();
 }
 
@@ -111,6 +116,49 @@ void LD2460Component::send_query_version_command_() {
   this->write_array(QUERY_VERSION, sizeof(QUERY_VERSION));
   this->flush();
   ESP_LOGI(TAG, "Sent LD2460 query-version command.");
+}
+
+void LD2460Component::send_query_installation_mode_command_() {
+  static const uint8_t QUERY_INSTALLATION_MODE[] = {
+      0xFD, 0xFC, 0xFB, 0xFA,
+      0x0A,
+      0x0C, 0x00,
+      0x01,
+      0x04, 0x03, 0x02, 0x01,
+  };
+  this->write_array(QUERY_INSTALLATION_MODE, sizeof(QUERY_INSTALLATION_MODE));
+  this->flush();
+  ESP_LOGI(TAG, "Sent LD2460 query-installation-mode command.");
+}
+
+void LD2460Component::set_installation_mode(uint8_t mode) {
+  if (mode < 1 || mode > 2) {
+    ESP_LOGW(TAG, "Invalid LD2460 installation mode: %u", mode);
+    return;
+  }
+
+  const uint8_t command[] = {
+      0xFD, 0xFC, 0xFB, 0xFA,
+      0x09,
+      0x0C, 0x00,
+      mode,
+      0x04, 0x03, 0x02, 0x01,
+  };
+  this->write_array(command, sizeof(command));
+  this->flush();
+  ESP_LOGI(TAG, "Sent LD2460 installation mode command: %s", installation_mode_to_string_(mode));
+}
+
+void LD2460Component::publish_installation_mode_(uint8_t mode) {
+  if (mode < 1 || mode > 2)
+    return;
+
+  if (this->installation_mode_text_sensor_ != nullptr)
+    this->installation_mode_text_sensor_->publish_state(installation_mode_to_string_(mode));
+#ifdef USE_SELECT
+  if (this->installation_mode_select_ != nullptr)
+    this->installation_mode_select_->publish_state(mode - 1);
+#endif
 }
 
 void LD2460Component::select_next_baud_rate_() {
@@ -270,13 +318,24 @@ void LD2460Component::process_command_frame_(const std::vector<uint8_t> &frame) 
       ESP_LOGI(TAG, "LD2460 reporting %s: %s", enabled ? "enable" : "disable", success ? "success" : "failed");
       break;
     }
+    case 0x09: {
+      if (payload_length < 1)
+        break;
+      const uint8_t result = frame[payload_offset];
+      const bool success = (result & 0x10) != 0;
+      const uint8_t mode = result & 0x0F;
+      ESP_LOGI(TAG, "LD2460 set installation mode %s: %s", installation_mode_to_string_(mode),
+               success ? "success" : "failed");
+      if (success)
+        this->publish_installation_mode_(mode);
+      break;
+    }
     case 0x0A: {
       if (payload_length < 1)
         break;
       const char *mode = installation_mode_to_string_(frame[payload_offset]);
       ESP_LOGI(TAG, "LD2460 installation mode: %s", mode);
-      if (this->installation_mode_text_sensor_ != nullptr)
-        this->installation_mode_text_sensor_->publish_state(mode);
+      this->publish_installation_mode_(frame[payload_offset]);
       break;
     }
     case 0x0B: {
@@ -293,8 +352,7 @@ void LD2460Component::process_command_frame_(const std::vector<uint8_t> &frame) 
       ESP_LOGI(TAG, "LD2460 firmware: %s", firmware);
       if (this->firmware_text_sensor_ != nullptr)
         this->firmware_text_sensor_->publish_state(firmware);
-      if (this->installation_mode_text_sensor_ != nullptr)
-        this->installation_mode_text_sensor_->publish_state(mode);
+      this->publish_installation_mode_(frame[payload_offset]);
       break;
     }
     default:
