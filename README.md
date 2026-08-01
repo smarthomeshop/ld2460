@@ -158,8 +158,8 @@ conversion and five-target support without coupling the product to CeilSense:
 
 ```yaml
 packages:
-  mounting: github://smarthomeshop/radar-mounting/packages/mounting/ceiling.yaml@main
-  radar_profile: github://smarthomeshop/radar-mounting/packages/radars/ld2460.yaml@main
+  mounting: github://smarthomeshop/radar-mounting/packages/mounting/ceiling.yaml@v1.0.0
+  radar_profile: github://smarthomeshop/radar-mounting/packages/radars/ld2460.yaml@v1.0.0
   radar_ceiling_mode: github://smarthomeshop/ld2460/packages/ld2460-ceiling-mode.yaml@main
 ```
 
