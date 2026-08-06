@@ -34,6 +34,7 @@ ld2460:
   uart_id: uart_tracking
   baud_scan: false
   enable_reporting: true
+  startup_installation_mode: side
   presence:
     id: tracking_presence
     name: "Tracking Presence"
@@ -56,3 +57,11 @@ select:
     installation_mode:
       id: tracking_installation_mode_select
       name: "Tracking Radar Installation Mode"
+
+number:
+  - platform: ld2460
+    ld2460_id: tracking_radar
+    installation_height:
+      name: "Tracking Radar Installation Height"
+    installation_angle:
+      name: "Tracking Radar Installation Angle"

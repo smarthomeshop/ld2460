@@ -13,13 +13,16 @@ from esphome.const import (
     UNIT_METER,
 )
 
-AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
+AUTO_LOAD = ["binary_sensor", "number", "sensor", "text_sensor"]
 DEPENDENCIES = ["uart"]
 MULTI_CONF = True
 
 ld2460_ns = cg.esphome_ns.namespace("ld2460")
 LD2460Component = ld2460_ns.class_(
     "LD2460Component", cg.Component, uart.UARTDevice
+)
+InstallationParameterType = ld2460_ns.enum(
+    "InstallationParameterType", is_class=True
 )
 
 CONF_RAW = "raw"
@@ -36,11 +39,18 @@ CONF_SUMMARY = "summary"
 CONF_TARGET_COUNT = "target_count"
 CONF_FIRMWARE = "firmware"
 CONF_INSTALLATION_MODE = "installation_mode"
+CONF_STARTUP_INSTALLATION_MODE = "startup_installation_mode"
 CONF_X = "x"
 CONF_Y = "y"
 CONF_DISTANCE = "distance"
 CONF_ANGLE = "angle"
 CONF_TARGETS = [f"target_{index}" for index in range(1, 6)]
+
+INSTALLATION_MODES = {
+    "unchanged": 0,
+    "side": 1,
+    "top": 2,
+}
 
 TARGET_SCHEMA = cv.Schema(
     {
@@ -76,6 +86,9 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.GenerateID(): cv.declare_id(LD2460Component),
             cv.Optional(CONF_BAUD_SCAN, default=True): cv.boolean,
+            cv.Optional(
+                CONF_STARTUP_INSTALLATION_MODE, default="unchanged"
+            ): cv.enum(INSTALLATION_MODES, lower=True),
             cv.Optional(CONF_RAW): text_sensor.text_sensor_schema(
                 icon="mdi:serial-port",
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
@@ -189,6 +202,9 @@ async def to_code(config):
     cg.add(var.set_flush_timeout(config[CONF_FLUSH_TIMEOUT].total_milliseconds))
     cg.add(var.set_max_buffer_size(config[CONF_MAX_BUFFER_SIZE]))
     cg.add(var.set_baud_scan(config[CONF_BAUD_SCAN]))
+    cg.add(
+        var.set_startup_installation_mode(config[CONF_STARTUP_INSTALLATION_MODE])
+    )
     cg.add(var.set_enable_reporting(config[CONF_ENABLE_REPORTING]))
     cg.add(var.set_no_data_log_interval(config[CONF_NO_DATA_LOG_INTERVAL].total_milliseconds))
     cg.add(var.set_publish_interval(config[CONF_PUBLISH_INTERVAL].total_milliseconds))

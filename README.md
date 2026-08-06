@@ -8,6 +8,11 @@ decoded target data to Home Assistant. Detection radius, zones, sensitivity and
 firmware updates can stay in the HLK Radar Tool app; the module stores those
 settings itself.
 
+Release `v0.3.0` also reads, verifies and controls the LD2460 installation mode,
+height and angle. These settings are written to the radar module itself and are
+read back after a restart, so the Home Assistant controls show the actual saved
+radar configuration.
+
 ## Repository Structure
 
 ```text
@@ -85,6 +90,8 @@ For a Seeed Studio XIAO ESP32-C6 example:
 - Diagnostic raw UART frame
 - Diagnostic UART byte counter
 - Diagnostic firmware and installation mode text sensors
+- Installation mode control (`side` or `top`)
+- Installation height and installation angle controls for side mounting
 
 Home Assistant state updates are published only when the target state changes
 and are additionally limited by `ld2460_publish_interval`.
@@ -93,14 +100,50 @@ and are additionally limited by `ld2460_publish_interval`.
 
 | Substitution                        | Default                                       | Description                                         |
 | ----------------------------------- | --------------------------------------------- | --------------------------------------------------- |
-| `ld2460_package_version`            | `v0.2.0`                                      | Package release marker                              |
+| `ld2460_package_version`            | `v0.3.0`                                      | Package release marker                              |
 | `ld2460_tx_pin`                     | `GPIO16`                                      | ESP TX pin connected to LD2460 Rx2                  |
 | `ld2460_rx_pin`                     | `GPIO17`                                      | ESP RX pin connected to LD2460 Tx2                  |
 | `ld2460_bus_id`                     | `ld2460_bus`                                  | ESPHome UART bus id                                 |
 | `ld2460_component_id`               | `ld2460_radar`                                | ESPHome LD2460 component id                         |
 | `ld2460_publish_interval`           | `500ms`                                       | Minimum interval between changed HA state publishes |
 | `ld2460_report_log_interval`        | `1s`                                          | Interval for readable target report log lines       |
-| `ld2460_external_components_source` | `github://smarthomeshop/ld2460@v0.2.0`        | External component source                           |
+| `ld2460_startup_installation_mode`  | `unchanged`                                   | Required radar mode: `unchanged`, `side` or `top`   |
+| `ld2460_external_components_source` | `github://smarthomeshop/ld2460@v0.3.0`        | External component source                           |
+
+## Mounting And Coordinate System
+
+For a wall-mounted product, set:
+
+```yaml
+substitutions:
+  ld2460_startup_installation_mode: side
+```
+
+The component queries the saved mode after startup and only changes it when it
+does not match the required mode. In `side` mode it also queries the saved
+installation height and angle. The two Home Assistant number entities write a
+new value to the radar and then read both values back for confirmation. Hi-Link
+documents that these parameters remain stored after the radar is powered off.
+
+Use the actual mounting values. Hi-Link recommends a wall mounting height of
+`2.2-2.7 m` and a downward angle of `25-40 degrees` (`2.6 m` and `30 degrees`
+are its examples). A substantially lower installation can still detect people,
+but its reported floor coordinates may be less geometrically accurate.
+
+Physical orientation matters:
+
+- use the antenna end of the module as the forward-facing edge;
+- positive Y points straight forward from that antenna edge into the room;
+- positive X points to the right when looking in the forward direction;
+- do not choose an orientation only because the connector appears to fit;
+- verify the direction with a short forward walk and a left-to-right walk
+  before configuring Room Designer zones.
+
+The firmware deliberately does not rotate or scale the raw LD2460 coordinates.
+It publishes the coordinate system reported by the radar. Reflections from
+mirrors, metal cupboards and other large reflective surfaces can create a
+second or displaced target and cannot be corrected with a simple coordinate
+rotation.
 
 ## Protocol Notes
 
@@ -163,9 +206,10 @@ packages:
   radar_ceiling_mode: github://smarthomeshop/ld2460/packages/ld2460-ceiling-mode.yaml@main
 ```
 
-The final package uses the official function `0x09` command to select the
-LD2460 hardware `top` installation mode after startup. The active mode is also
-visible and adjustable through the installation-mode select.
+The final package verifies the LD2460 hardware `top` installation mode after
+startup and uses the official function `0x09` command only when the saved mode
+must be changed. The active mode is also visible and adjustable through the
+installation-mode select.
 
 UltimateSensor V2 schematic mapping:
 

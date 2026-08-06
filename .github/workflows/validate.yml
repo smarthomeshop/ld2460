@@ -17,6 +17,6 @@ jobs:
             docker run --rm \
               -v "$PWD":/config \
               -w /config \
-              esphome/esphome:2026.7.2 \
+              esphome/esphome:2026.7.3 \
               config "$config"
           done

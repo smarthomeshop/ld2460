@@ -1,12 +1,14 @@
 #pragma once
 
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/number/number.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 
 #include <cstdint>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -14,6 +16,11 @@ namespace esphome {
 namespace ld2460 {
 
 class LD2460InstallationModeSelect;
+
+enum class InstallationParameterType : uint8_t {
+  HEIGHT,
+  ANGLE,
+};
 
 class LD2460Component : public Component, public uart::UARTDevice {
  public:
@@ -38,6 +45,10 @@ class LD2460Component : public Component, public uart::UARTDevice {
     this->installation_mode_select_ = installation_mode_select;
   }
   void set_installation_mode(uint8_t mode);
+  void set_startup_installation_mode(uint8_t mode) { this->desired_installation_mode_ = mode; }
+  void set_installation_height_number(number::Number *number) { this->installation_height_number_ = number; }
+  void set_installation_angle_number(number::Number *number) { this->installation_angle_number_ = number; }
+  void set_installation_parameter(InstallationParameterType type, float value);
   void set_presence_binary_sensor(binary_sensor::BinarySensor *presence_binary_sensor) {
     this->presence_binary_sensor_ = presence_binary_sensor;
   }
@@ -80,7 +91,11 @@ class LD2460Component : public Component, public uart::UARTDevice {
   void send_enable_reporting_command_();
   void send_query_version_command_();
   void send_query_installation_mode_command_();
+  void send_set_installation_mode_command_(uint8_t mode);
+  void send_set_installation_parameters_command_(float height_m, float angle_deg);
+  void send_query_installation_parameters_command_();
   void publish_installation_mode_(uint8_t mode);
+  void publish_installation_parameters_(float height_m, float angle_deg);
   void select_next_baud_rate_();
   void process_rx_buffer_();
   void process_report_frame_(const std::vector<uint8_t> &frame);
@@ -103,6 +118,8 @@ class LD2460Component : public Component, public uart::UARTDevice {
   text_sensor::TextSensor *firmware_text_sensor_{nullptr};
   text_sensor::TextSensor *installation_mode_text_sensor_{nullptr};
   LD2460InstallationModeSelect *installation_mode_select_{nullptr};
+  number::Number *installation_height_number_{nullptr};
+  number::Number *installation_angle_number_{nullptr};
   binary_sensor::BinarySensor *presence_binary_sensor_{nullptr};
   sensor::Sensor *target_count_sensor_{nullptr};
   sensor::Sensor *byte_count_sensor_{nullptr};
@@ -121,10 +138,20 @@ class LD2460Component : public Component, public uart::UARTDevice {
   uint32_t report_log_interval_ms_{1000};
   uint8_t last_published_target_count_{0};
   uint8_t baud_index_{0};
+  uint8_t desired_installation_mode_{0};
+  uint8_t current_installation_mode_{0};
+  uint8_t startup_attempts_{0};
   bool baud_scan_{true};
   bool enable_reporting_{true};
   bool startup_commands_sent_{false};
+  bool installation_mode_received_{false};
+  bool installation_parameters_received_{false};
+  bool installation_parameters_query_sent_{false};
   bool has_published_targets_{false};
+  float current_installation_height_m_{NAN};
+  float current_installation_angle_deg_{NAN};
+  float desired_installation_height_m_{NAN};
+  float desired_installation_angle_deg_{NAN};
   uint32_t no_data_log_interval_ms_{10000};
 };
 

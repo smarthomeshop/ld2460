@@ -7,11 +7,14 @@
 substitutions:
   ld2460_tx_pin: GPIO16
   ld2460_rx_pin: GPIO17
+  # Use side for wall mounting, top for ceiling mounting, or unchanged when
+  # another tool owns this radar setting.
+  ld2460_startup_installation_mode: unchanged
 
 packages:
   ld2460:
     url: https://github.com/smarthomeshop/ld2460
-    ref: v0.1.1
+    ref: v0.3.0
     files:
       - ld2460.yaml
     refresh: 1d

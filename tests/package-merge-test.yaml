@@ -1,7 +1,8 @@
 substitutions:
   device_name: ld2460-package-merge-test
   friendly_name: LD2460 Package Merge Test
-  ld2460_external_components_source: github://smarthomeshop/ld2460@v0.2.0
+  ld2460_external_components_source: ../components
+  ld2460_startup_installation_mode: side
   ld2460_tx_pin: GPIO4
   ld2460_rx_pin: GPIO5
 

@@ -1,13 +1,14 @@
 substitutions:
   # Package release. Keep this in sync with the Git tag and CHANGELOG.md.
-  ld2460_package_version: v0.1.1
-  ld2460_external_components_source: github://smarthomeshop/ld2460@v0.1.1
+  ld2460_package_version: v0.3.0
+  ld2460_external_components_source: github://smarthomeshop/ld2460@v0.3.0
   ld2460_bus_id: ld2460_bus
   ld2460_component_id: ld2460_radar
   ld2460_tx_pin: GPIO16
   ld2460_rx_pin: GPIO17
   ld2460_publish_interval: 500ms
   ld2460_report_log_interval: 1s
+  ld2460_startup_installation_mode: unchanged
 
 external_components:
   - source: ${ld2460_external_components_source}
@@ -29,6 +30,7 @@ ld2460:
   uart_id: ${ld2460_bus_id}
   baud_scan: false
   enable_reporting: true
+  startup_installation_mode: ${ld2460_startup_installation_mode}
   flush_timeout: 100ms
   max_buffer_size: 48
   no_data_log_interval: 10s
@@ -93,3 +95,17 @@ ld2460:
       name: "Target 5 Distance"
     angle:
       name: "Target 5 Angle"
+
+select:
+  - platform: ld2460
+    ld2460_id: ${ld2460_component_id}
+    installation_mode:
+      name: "Installation Mode"
+
+number:
+  - platform: ld2460
+    ld2460_id: ${ld2460_component_id}
+    installation_height:
+      name: "Installation Height"
+    installation_angle:
+      name: "Installation Angle"

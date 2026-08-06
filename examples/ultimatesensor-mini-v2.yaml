@@ -6,11 +6,12 @@
 substitutions:
   ld2460_tx_pin: GPIO4
   ld2460_rx_pin: GPIO5
+  ld2460_startup_installation_mode: side
 
 packages:
   tracking:
     url: https://github.com/smarthomeshop/ld2460
-    ref: v0.1.1
+    ref: v0.3.0
     files:
       - tracking-ld2460.yaml
     refresh: 1d
